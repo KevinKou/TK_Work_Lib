@@ -1,4 +1,5 @@
 require 'optparse'
+require 'find'
 
 option={}
 OptionParser.new do |opt|
@@ -11,6 +12,25 @@ OptionParser.new do |opt|
 		option[:c] = v
 	end
 	opt.parse!(ARGV)
+end
+
+
+def filePaths( dirPath )
+	if !File.exist?( dirPath )
+		puts "#{dirPath}そのようなディレクトリ/ファイルがありません"
+		return
+	end
+
+	fileHash = Hash.new
+
+	Find.find( dirPath ) {
+		|f|
+		if File::ftype( f ) != "directory"
+			fileHash[f] = File::stat( f ).mtime.to_s
+		end
+	}
+
+	return fileHash
 end
 
 if option[:c]
@@ -45,6 +65,18 @@ if option[:c]
 
 		if firstDir != nil && secendDir != nil
 			# folder compare processing
+			first  = filePaths( firstDir )
+			secend = filePaths( secendDir )
+
+			first.each_key {
+				|pathKey|
+				firstMtime = first[pathKey]
+				secendMtime = secend[pathKey]
+
+				if firstMtime != secendMtime
+					puts "#{pathKey} と #{}"
+				end
+			}
 
 			firstDir = nil
 			secendDir = nil
@@ -52,3 +84,7 @@ if option[:c]
 		end
 	}
 end
+
+
+
+
